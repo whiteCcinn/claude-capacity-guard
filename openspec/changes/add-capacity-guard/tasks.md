@@ -1,0 +1,5 @@
+- [x] Write failing quota policy tests, then implement policy.
+- [x] Write lifecycle and continuation tests, then implement runtime hooks.
+- [x] Review races and failure paths adversarially and add regression tests.
+- [x] Validate manifests, run native mock tests, typecheck, and perform a native pause/resume check with a stubbed main model.
+- [x] Document setup, configuration, supported automation, and material limits.

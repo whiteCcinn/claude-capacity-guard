@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Troubleshooting / 故障排查
+    url: https://github.com/whiteCcinn/claude-capacity-guard/blob/main/docs/troubleshooting.md
+    about: Check known behavior and configuration before reporting a defect.
+  - name: Security policy / 安全政策
+    url: https://github.com/whiteCcinn/claude-capacity-guard/blob/main/SECURITY.md
+    about: Follow the private reporting guidance for vulnerabilities.

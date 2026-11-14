@@ -1,0 +1,22 @@
+name: Feature request / 功能建议
+description: Describe a concrete workflow and the behavior it needs.
+title: "feature: "
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Workflow and problem / 场景与问题
+      description: Explain the task, session type and current limitation.
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Proposed behavior / 期望行为
+      description: Include what should happen on cancellation, restart, missing quota and failed continuation when relevant.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives / 替代方式

@@ -1,0 +1,7 @@
+{
+  "name": "capacity-fixture",
+  "version": "0.1.0",
+  "description": "Development fixture with simulated quota and a stubbed main model.",
+  "author": { "name": "whiteCcinn" },
+  "license": "MIT"
+}

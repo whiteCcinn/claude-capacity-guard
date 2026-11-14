@@ -1,0 +1,11 @@
+{
+  "name": "claude-capacity-guard",
+  "description": "Native Claude Code quota monitoring with task pause and continuation after reset.",
+  "owner": { "name": "whiteCcinn" },
+  "plugins": [{
+    "name": "capacity-guard",
+    "source": "./plugins/capacity-guard",
+    "description": "Pause Claude Code before subscription quota runs low and continue the same conversation after reset.",
+    "version": "0.1.0"
+  }]
+}

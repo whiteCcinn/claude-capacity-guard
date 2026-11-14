@@ -1,0 +1,43 @@
+name: Bug report / 缺陷报告
+description: Report reproducible guard behavior or documentation errors.
+title: "bug: "
+body:
+  - type: markdown
+    attributes:
+      value: "Do not include credentials, private transcripts, raw settings or account identifiers. For vulnerabilities, follow SECURITY.md. English and Simplified Chinese are welcome."
+  - type: input
+    id: versions
+    attributes:
+      label: Versions and platform / 版本与平台
+      description: Claude Code version, plugin version, OS and terminal or other surface.
+    validations:
+      required: true
+  - type: dropdown
+    id: installation
+    attributes:
+      label: Installation / 安装方式
+      options:
+        - GitHub marketplace
+        - Local marketplace
+        - Source with --plugin-dir
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction / 复现步骤
+      description: Include relevant configuration values and whether this uses a single session, subagents or Agent Teams. Redact private details.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected and actual behavior / 预期与实际行为
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Minimal redacted evidence / 最少脱敏证据
+      description: Relevant status text or a reduced fixture is preferred over a full session log. State whether quota was real or simulated.

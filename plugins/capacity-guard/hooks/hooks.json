@@ -1,0 +1,4 @@
+{
+  "description": "Guard model requests with native quota readings and resume paused interactive sessions after reset.",
+  "modules": ["./register.ts"]
+}
