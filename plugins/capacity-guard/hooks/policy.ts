@@ -1,7 +1,9 @@
 import type { PluginOptions, SessionRateLimit } from "claude-code"
 
-export type GuardSettings = { enabled: boolean; threshold: number; bufferMs: number; intervalMs: number }
+export type GuardSettings = { enabled: boolean; threshold: number; bufferMs: number; intervalMs: number; resumeText: string }
 export type CapacityDecision = { known: boolean; blocked: boolean; windows: SessionRateLimit[]; resumeAt: number | null }
+export const DEFAULT_RESUME_TEXT = "continue"
+export const MAX_RESUME_TEXT_LENGTH = 4096
 
 export function validWindows(limits: readonly SessionRateLimit[]): SessionRateLimit[] {
   return limits.filter(limit => limit && typeof limit.kind === "string" && limit.kind.length > 0 && Number.isFinite(limit.percentUsed) && limit.percentUsed >= 0)
@@ -12,11 +14,13 @@ function bounded(value: unknown, fallback: number, min: number, max: number): nu
 }
 
 export function guardSettings(options: PluginOptions): GuardSettings {
+  const resumeText = typeof options.resume_text === "string" ? options.resume_text.trim() : ""
   return {
     enabled: options.enabled !== false,
     threshold: bounded(options.remaining_threshold, 10, 0, 99),
     bufferMs: bounded(options.reset_buffer_seconds, 60, 1, 3600) * 1000,
     intervalMs: bounded(options.check_interval_seconds, 30, 5, 300) * 1000,
+    resumeText: resumeText && resumeText.length <= MAX_RESUME_TEXT_LENGTH ? resumeText : DEFAULT_RESUME_TEXT,
   }
 }
 

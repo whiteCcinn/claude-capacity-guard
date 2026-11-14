@@ -67,11 +67,25 @@ test("low quota saves first, blocks the model, then submits one continuation aft
   expect(f.sent.length).toBe(0)
   await f.clock.advance(1)
   expect(f.sent.length).toBe(1)
-  expect(f.sent[0]).toContain("继续")
+  expect(f.sent).toEqual(["continue"])
   expect(f.resumeOrigins).toEqual([{ kind: "plugin", name: "capacity-guard" }])
   await f.clock.advance(60_000)
   expect(f.sent.length).toBe(1)
 })
+
+for (const resumeText of ["继续", "continue", "请先核对已完成的步骤，然后继续原任务。\nPreserve the existing permissions."]) {
+  test(`automatic continuation sends exactly the configured text: ${resumeText}`, { options: { ...options, resume_text: resumeText } }, async ($, on) => {
+    const f = fixture(on)
+    f.state.limits = [{ kind: "five_hour", percentUsed: 99, resetsAt: new Date(10_000).toISOString() }]
+    await $.session.start(start)
+    await consume($.turn.step(step))
+    await f.clock.advance(15_000)
+    expect(f.sent).toEqual([resumeText])
+    expect(f.resumeOrigins).toEqual([{ kind: "plugin", name: "capacity-guard" }])
+    await f.clock.advance(30_000)
+    expect(f.sent).toEqual([resumeText])
+  })
+}
 
 test("weekly quota prevents an early five-hour wake", { options }, async ($, on) => {
   const f = fixture(on)
@@ -191,6 +205,25 @@ test("reload re-arms the live checkpoint and cancels the previous timer", { opti
   await $.session.start(start)
   await f.clock.advance(30_000)
   expect(f.sent.length).toBe(1)
+})
+
+test("a re-armed checkpoint uses the configured resume text after reload", { options: { ...options, resume_text: "继续" } }, async ($, on) => {
+  const f = fixture(on)
+  f.state.limits = [{ kind: "five_hour", percentUsed: 99, resetsAt: new Date(10_000).toISOString() }]
+  await $.session.start(start)
+  await consume($.turn.step(step))
+  await $.session.start(start)
+  await f.clock.advance(30_000)
+  expect(f.sent).toEqual(["继续"])
+})
+
+test("blank configured text cannot submit an empty continuation", { options: { ...options, resume_text: " \t " } }, async ($, on) => {
+  const f = fixture(on)
+  f.state.limits = [{ kind: "five_hour", percentUsed: 99, resetsAt: new Date(10_000).toISOString() }]
+  await $.session.start(start)
+  await consume($.turn.step(step))
+  await f.clock.advance(30_000)
+  expect(f.sent).toEqual(["continue"])
 })
 
 test("an interrupted newer turn cancels old ownership", { options }, async ($, on) => {

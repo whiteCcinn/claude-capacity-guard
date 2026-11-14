@@ -21,7 +21,8 @@ claude plugin install capacity-guard@claude-capacity-guard \
   --config enabled=true \
   --config remaining_threshold=20 \
   --config reset_buffer_seconds=60 \
-  --config check_interval_seconds=30
+  --config check_interval_seconds=30 \
+  --config resume_text=continue
 ```
 
 用户范围安装用于当前机器的各个项目。组织策略、禁用钩子的启动选项及其他安装范围仍可能影响加载。
@@ -42,6 +43,7 @@ claude plugin install capacity-guard@claude-capacity-guard \
 | `remaining_threshold` | number | `10` | 0–99；剩余严格低于该值时暂停，耗尽总会触发 |
 | `reset_buffer_seconds` | number | `60` | 1–3600 秒，避免刚到重置时间就立即恢复 |
 | `check_interval_seconds` | number | `30` | 5–300 秒，决定后台检查频率 |
+| `resume_text` | string | `continue` | 自动发送的完整文本；去除首尾空白后最多 4096 个 JavaScript 字符串单位，空白或超长值回退默认值 |
 
 参数由原生配置系统提供。策略层遇到越界或非有限的数字会使用该参数默认值，不会猜测用户原本想填多少。原生数值输入和 `--settings` 的 `options` 使用对应的数值类型。
 
@@ -50,13 +52,19 @@ claude plugin install capacity-guard@claude-capacity-guard \
 ```bash
 claude plugin configure capacity-guard@claude-capacity-guard
 claude plugin configure capacity-guard@claude-capacity-guard --values-stdin <<'JSON'
-{"enabled":"true","remaining_threshold":"20","reset_buffer_seconds":"60","check_interval_seconds":"30"}
+{"enabled":"true","remaining_threshold":"20","reset_buffer_seconds":"60","check_interval_seconds":"30","resume_text":"continue"}
 JSON
 ```
 
 `configure --values-stdin` 的 CLI 契约要求单行字符串值，由宿主按 manifest 解析。它与直接写 `--settings` JSON 时的类型要求不同；以本机 `claude plugin configure --help` 为准。
 
 插件自身不直接修改用户的设置文件。原生 `pluginConfigs` 由 Claude 管理，组织锁定的配置仍由宿主控制。
+
+### 自定义自动继续文本
+
+在「自动继续文本」中填写 `continue`、`继续`，或例如“请先核对已有结果，再继续未完成的步骤”。发送时不拼接旧的固定长指令；只有首尾空白会被去除。空白、错误类型或超过长度限制的值回退为 `continue`，不会截断后发送。
+
+升级后没有保存过此配置的用户也默认发送 `continue`。修改后重新加载插件；仍在当前会话等待的记录会使用重新加载后的文本。它不定义外部自动化消息的识别词，外部发送的内容仍按 Claude 原生输入来源和其他插件的规则处理。
 
 ## 源码与本地开发
 

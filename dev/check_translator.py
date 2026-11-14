@@ -3,7 +3,6 @@
 import argparse
 import json
 from pathlib import Path
-import re
 import shutil
 import subprocess
 import tempfile
@@ -17,10 +16,11 @@ def main():
     manifest = json.loads((source / ".claude-plugin/plugin.json").read_text())
     if manifest.get("name") != "interaction-translator":
         parser.error("The supplied directory is not interaction-translator")
-    guard = Path(__file__).resolve().parents[1] / "plugins/capacity-guard/hooks/register.ts"
-    match = re.search(r'const CONTINUE = "([^"]+)"', guard.read_text())
-    if match is None:
-        parser.error("Cannot locate the guard continuation; update this development helper")
+    guard_manifest = Path(__file__).resolve().parents[1] / "plugins/capacity-guard/.claude-plugin/plugin.json"
+    default = json.loads(guard_manifest.read_text())["userConfig"]["resume_text"]["default"]
+    if not isinstance(default, str) or not default.strip():
+        parser.error("Guard resume_text must have a nonempty string default")
+    messages = list(dict.fromkeys([default, "继续"]))
     print(f"Checking interaction-translator {manifest.get('version', 'unknown')}", flush=True)
     with tempfile.TemporaryDirectory(prefix="capacity-translator-check-") as temporary:
         target = Path(temporary)
@@ -30,9 +30,9 @@ def main():
             shutil.copytree(source / directory, target / directory)
         (target / "tests").mkdir()
         test = '''import { expect, test } from "claude-code/testing"
-const continuation = CONTINUATION_JSON
+for (const continuation of RESUME_MESSAGES_JSON) {
 for (const backend of ["api", "codex-cli"]) {
-  test(`plugin continuation bypasses ${backend} input translation`, { options: { backend } }, async ($, on) => {
+  test(`plugin continuation ${continuation} bypasses ${backend} input translation`, { options: { backend } }, async ($, on) => {
     let calls = 0
     on("http.fetch", () => { calls++; throw new Error("unexpected translation API call") })
     on("process.run", () => { calls++; throw new Error("unexpected translation process") })
@@ -43,7 +43,8 @@ for (const backend of ["api", "codex-cli"]) {
     expect(calls).toBe(0)
   })
 }
-'''.replace("CONTINUATION_JSON", json.dumps(match.group(1), ensure_ascii=False))
+}
+'''.replace("RESUME_MESSAGES_JSON", json.dumps(messages, ensure_ascii=False))
         (target / "tests/input-source.test.ts").write_text(test)
         return subprocess.run(["claude", "plugin", "test", str(target)], check=False).returncode
 

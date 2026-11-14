@@ -4,7 +4,7 @@ import { capacityDecision, guardSettings } from "../hooks/policy"
 const now = Date.parse("2026-11-14T08:00:00Z")
 const five = "2026-11-14T10:00:00Z"
 const week = "2026-11-16T08:00:00Z"
-const settings = { threshold: 10, bufferMs: 60_000, intervalMs: 30_000, enabled: true }
+const settings = { threshold: 10, bufferMs: 60_000, intervalMs: 30_000, enabled: true, resumeText: "continue" }
 
 test("threshold is remaining percent and equality is allowed", () => {
   expect(capacityDecision([{ kind: "five_hour", percentUsed: 90, resetsAt: five }], now, settings).blocked).toBe(false)
@@ -45,5 +45,23 @@ test("zero threshold still stops an exhausted window, including spend limits ove
 
 test("settings reject nonfinite and out of range values with safe defaults", () => {
   expect(guardSettings({ remaining_threshold: NaN, reset_buffer_seconds: -1, check_interval_seconds: 0 })).toEqual(settings)
-  expect(guardSettings({ enabled: false, remaining_threshold: 20, reset_buffer_seconds: 5, check_interval_seconds: 10 })).toEqual({ enabled: false, threshold: 20, bufferMs: 5000, intervalMs: 10_000 })
+  expect(guardSettings({ enabled: false, remaining_threshold: 20, reset_buffer_seconds: 5, check_interval_seconds: 10 })).toEqual({ enabled: false, threshold: 20, bufferMs: 5000, intervalMs: 10_000, resumeText: "continue" })
+})
+
+test("resume text defaults to continue for new and upgraded configurations", () => {
+  expect(guardSettings({}).resumeText).toBe("continue")
+  expect(guardSettings({ remaining_threshold: 20 }).resumeText).toBe("continue")
+})
+
+test("resume text supports Unicode and trims only surrounding whitespace", () => {
+  expect(guardSettings({ resume_text: "继续" }).resumeText).toBe("继续")
+  expect(guardSettings({ resume_text: "  continue  " }).resumeText).toBe("continue")
+  expect(guardSettings({ resume_text: "检查已有进度后继续。\nDo not repeat completed steps." }).resumeText).toBe("检查已有进度后继续。\nDo not repeat completed steps.")
+  expect(guardSettings({ resume_text: "x".repeat(4096) }).resumeText.length).toBe(4096)
+})
+
+test("empty, wrong-type and oversized resume text falls back without truncation", () => {
+  for (const resume_text of ["", " \n\t ", false, 10, ["continue"], "x".repeat(4097)]) {
+    expect(guardSettings({ resume_text }).resumeText).toBe("continue")
+  }
 })

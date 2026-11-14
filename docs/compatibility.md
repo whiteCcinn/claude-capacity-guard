@@ -2,7 +2,7 @@
 
 [返回 README](../README.md)
 
-以下是 0.1.0 在 2026-11-14 的验证记录，区分“已验证”和“设计上可能适用”。Mods API 会随 Claude Code 更新，不能把一个版本的通过结果视作通用保证。
+以下是截至 0.1.1、2026-11-14 的验证记录，区分“已验证”和“设计上可能适用”。Mods API 会随 Claude Code 更新，不能把一个版本的通过结果视作通用保证。
 
 | 项目 | 状态 |
 | --- | --- |
@@ -10,7 +10,8 @@
 | 原生暂停到定时继续的完整流程 | 已用模拟额度与替身主模型验证；继续消息只提交一次，结束后无待恢复记录 |
 | 阈值、多个额度窗口、空读数、存储故障、并发请求、热重载、重新打开记录 | 原生 mock 测试覆盖 |
 | 严格 TypeScript 检查 | 使用安装的 Claude Code 生成的声明验证 |
-| `interaction-translator` 0.7.0 | 来源过滤源码核对；两项独立原生测试验证 API / CLI 输入翻译零调用；共用会话中的命令已验证。输出翻译仍由对方配置决定 |
+| `interaction-translator` 0.7.0 | 来源过滤源码核对；四项独立原生测试覆盖 `continue` / “继续”与 API / CLI 组合，验证输入翻译零调用；共用会话中的命令已验证。输出翻译仍由对方配置决定 |
+| `resume_text` 配置 | 默认、中文、自定义文本、边界回退和热重载等待记录由原生 mock 测试覆盖 |
 | Linux | CI 工作流使用 `ubuntu-24.04`；首次远程任务受 GitHub 账号限制，未执行任何步骤，尚不能宣称 Linux CI 已通过，见 [Actions](https://github.com/whiteCcinn/claude-capacity-guard/actions/runs/43572110246) |
 | Windows、其他 Claude Code 版本、IDE / Desktop / mobile 界面 | 未完成原生端到端验证 |
 | Agent Teams | 部分请求检查；没有完整整队暂停与逐成员恢复验证 |

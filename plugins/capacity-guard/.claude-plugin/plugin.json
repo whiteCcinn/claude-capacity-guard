@@ -1,6 +1,6 @@
 {
   "name": "capacity-guard",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "types": "./types/index.d.ts",
   "author": { "name": "whiteCcinn" },
   "description": "Pause before Claude subscription quota runs low and continue after reset.",
@@ -12,6 +12,7 @@
     "enabled": { "type": "boolean", "title": "启用额度守卫", "description": "在模型请求前检查订阅额度，低于阈值时等待重置。", "default": true },
     "remaining_threshold": { "type": "number", "title": "剩余额度阈值（%）", "description": "剩余额度严格低于该百分比时暂停。0 表示只在耗尽时暂停。范围 0–99。", "default": 10 },
     "reset_buffer_seconds": { "type": "number", "title": "重置后缓冲（秒）", "description": "在服务器报告的重置时间之后额外等待，范围 1–3600。", "default": 60 },
-    "check_interval_seconds": { "type": "number", "title": "等待期间检查间隔（秒）", "description": "仅检查原生缓存，不调用模型或额外请求用量接口。范围 5–300。", "default": 30 }
+    "check_interval_seconds": { "type": "number", "title": "等待期间检查间隔（秒）", "description": "仅检查原生缓存，不调用模型或额外请求用量接口。范围 5–300。", "default": 30 },
+    "resume_text": { "type": "string", "title": "自动继续文本", "description": "恢复时发送的完整文本，默认 continue，可改为继续或自定义指令。去除首尾空白；空值或超过 4096 字符时使用默认值。", "default": "continue" }
   }
 }

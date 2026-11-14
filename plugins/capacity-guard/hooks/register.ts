@@ -19,7 +19,6 @@ type Runtime = {
   inputPending: number
 }
 
-const CONTINUE = "额度守卫等待已结束。请在当前会话中继续刚才因额度不足暂停的原任务。先核对已有工具结果、文件改动和任务进度，从尚未完成的步骤继续；不要重复执行已经成功的有副作用操作。遵循用户最新指示和现有权限要求；若任务已经完成，仅报告完成状态。"
 const CHECKPOINT = { plugin: "capacity-guard", key: "checkpoint" } as const
 
 function stopped(e: TurnStepInput): TurnStepResult {
@@ -88,7 +87,7 @@ async function refresh($: EngineInterface, runtime: Runtime): Promise<void> {
     showStatus($, "额度等待已结束，正在继续原任务。")
     // Do not await a queued prompt inside a running-turn event. This helper
     // only runs in a timer callback or an immediate command while idle.
-    const result = await $.prompt.submit({ text: CONTINUE })
+    const result = await $.prompt.submit({ text: runtime.settings.resumeText })
     if (epoch !== runtime.epoch || runtime.checkpoint?.token !== held.token) return
     if (result.drop !== undefined) {
       runtime.checkpoint = { ...held, phase: "manual", note: "继续指令被拒绝或取消；请检查会话后输入继续。" }

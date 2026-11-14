@@ -4,7 +4,7 @@ English · [简体中文](README.md)
 
 Pause long-running work in an open, interactive Claude Code session when reported remaining quota falls below a threshold, then submit one continuation to the same conversation when the blocking windows become available.
 
-Defaults: **10% remaining**, a **60-second reset buffer**, and a **30-second check interval**. The plugin uses the native Mods API. It needs no separate API key, credential reader, or usage polling service.
+Defaults: **10% remaining**, a **60-second reset buffer**, a **30-second check interval**, and **`continue`** as the continuation text. The plugin uses the native Mods API. It needs no separate API key, credential reader, or usage polling service.
 
 ## Install
 
@@ -37,8 +37,11 @@ Inside Claude Code:
 | `remaining_threshold` | `10` | Pause strictly below this remaining percentage; 0–99, with 0 stopping exhausted quota |
 | `reset_buffer_seconds` | `60` | Wait another 1–3600 seconds after a reported reset |
 | `check_interval_seconds` | `30` | Read the native cache every 5–300 seconds; this does not refresh server usage |
+| `resume_text` | `continue` | The complete automatic continuation text; choose `继续` or a custom instruction |
 
 A threshold of 20 pauses below 20%; exactly 20% is allowed. Save the setting and reload as prompted. See [configuration](docs/configuration.md) for command-line examples, updates and removal.
+
+The continuation contains the configured text, with surrounding whitespace removed, and no hidden appended instructions. This configures outgoing automatic messages, not an additional keyword matcher for incoming messages.
 
 ## How it works
 
@@ -55,7 +58,7 @@ Claude continues from the existing transcript, tool results and files. This is a
 - **Keep the interactive session running.** A closed process cannot wake itself. Reopened sessions require manual continuation. Headless `claude -p` and SDK runs do not gain an external supervisor.
 - **Quota readings are cached from the last response.** Missing initial readings permit native requests. An existing pause remains waiting if readings disappear or fail. A passed reset timestamp permits a continuation attempt, not a fresh account-wide availability guarantee.
 - **Agent Teams support is partial.** Observed in-process member requests are checked, but only the main conversation gets an automatic continuation. There is no coordinated team-wide pause or per-member resume queue. Split-pane members need the plugin loaded in each process.
-- **External side effects are not exactly-once.** In-flight requests may finish and tools may be interrupted. The continuation asks Claude to inspect prior results before proceeding; it is not a transaction mechanism.
+- **External side effects are not exactly-once.** In-flight requests may finish and tools may be interrupted. You can configure an instruction to inspect prior results before proceeding; it is not a transaction mechanism.
 
 With `interaction-translator` 0.7.0, the automatic continuation has a `plugin` origin and bypasses its input translation path. Subsequent answers follow the translator's output settings. See [integrations](docs/integrations.md).
 

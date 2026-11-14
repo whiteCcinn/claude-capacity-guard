@@ -2,6 +2,18 @@
 
 Changes are recorded here using semantic versions. Version 0.x APIs and native host integrations may change as compatibility is established.
 
+## 0.1.1 — 2026-11-14
+
+### Added
+
+- Native `resume_text` configuration for the complete automatic continuation message, including Unicode and custom instructions.
+- Normalization and request-boundary tests for the default, custom text, empty and oversized values.
+
+### Changed
+
+- Automatic continuation now defaults to exactly `continue` instead of the previous fixed Chinese instruction. No hidden instructions are appended. Existing configurations without `resume_text` also use this new default.
+- The translator integration helper reads the manifest default and checks both `continue` and `继续` with API and CLI backend settings.
+
 ## 0.1.0 — 2026-11-14
 
 ### Added
