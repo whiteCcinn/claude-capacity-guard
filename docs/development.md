@@ -16,7 +16,7 @@ plugins/capacity-guard/
   tests/*.test.ts                  原生测试套件
 dev/smoke-fixture/                 替身主模型与模拟额度
 docs/                             产品和开发文档
-openspec/changes/                  规格、设计、任务和对抗审查
+openspec/changes/                  本地规格与审查记录，Git 忽略、不推送
 ```
 
 没有运行时 npm 包或单独的服务进程。Claude Code 加载 TypeScript 模块并提供 `claude-code` 和 `claude-code/testing`。不要尝试用 Node 直接运行原生钩子。

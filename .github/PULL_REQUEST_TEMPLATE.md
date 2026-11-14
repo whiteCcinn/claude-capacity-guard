@@ -1,6 +1,6 @@
 ## Change
 
-Describe the concrete problem and resulting behavior. Link an issue or OpenSpec change when relevant.
+Describe the concrete problem, resulting behavior and relevant design. Link an issue when relevant. Keep local OpenSpec records out of the commit.
 
 ## Validation
 

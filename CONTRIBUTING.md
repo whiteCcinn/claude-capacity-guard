@@ -6,7 +6,7 @@ Bug reports, documentation corrections and focused pull requests are welcome in 
 
 For a significant behavior change, open an issue describing the trigger, expected result, failure handling and affected session types. Small fixes can go directly to a pull request.
 
-This repository uses OpenSpec-style change records under `openspec/changes/`. Add or update a proposal, design, requirements, tasks and review record when changing behavior. Start with a failing test for the observable behavior, implement the smallest cohesive change, and add regression coverage for races or failure paths discovered during review.
+Keep OpenSpec-style proposals, designs, requirements, tasks and review records locally under `openspec/changes/` when changing behavior. That directory is ignored and must not be committed or pushed. Describe the reviewable design and requirements in the issue or pull request instead. Start with a failing test for the observable behavior, implement the smallest cohesive change, and add regression coverage for races or failure paths discovered during review.
 
 Preserve these contracts:
 
