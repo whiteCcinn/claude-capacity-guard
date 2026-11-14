@@ -12,9 +12,11 @@ plugins/capacity-guard/
   hooks/register.ts                生命周期、暂停、恢复和命令
   hooks/policy.ts                  纯额度策略
   hooks/checkpoint.ts              记录校验与窗口合并
+  hooks/team.ts                    原生成员识别、校验与门禁
   types/index.d.ts                 自包含 state 类型
   tests/*.test.ts                  原生测试套件
 dev/smoke-fixture/                 替身主模型与模拟额度
+dev/team-smoke/                    真实同进程队友与替身模型
 docs/                             产品和开发文档
 openspec/changes/                  本地规格与审查记录，Git 忽略、不推送
 ```
@@ -32,6 +34,8 @@ claude plugin test plugins/capacity-guard
 ```
 
 测试为额度、时间、保存、停止、提交和流式模型结果提供替身，不调用真实模型。它们验证：严格阈值与耗尽、多个重置窗口、缺失和过期读数、记录校验、并发暂停防重、接受与拒绝的用户输入、取消、异常存储、未知交付、热重载和新进程记录。
+
+0.2.0 共 56 项原生测试。团队测试另外覆盖原生成员识别、名单上限、停止拒绝后仍处理其他成员、成员新增、部分恢复不重发、主会话空闲、恢复时额度再次不足，以及发现名单期间用户输入撤销旧所有权。公共运行替身位于 `tests/runtime-fixture.ts`。
 
 新增功能先写失败测试，再实现；失败路径和并发条件应与正常路径一起评审。不会暴露到 mock 的宿主语义，需补原生流程证据，不能自行伪造保证。
 
@@ -59,6 +63,12 @@ npx --yes --package typescript@5.9.3 tsc --noEmit -p plugins/capacity-guard
 
 fixture 只替换主模型，其他插件、设置钩子和 Claude 后台特性保留自己的行为。示例命令对当前测试进程禁用已安装的生产实例和翻译插件，避免重复加载与不相关后端调用；不会改写用户永久设置。
 
+## 真实队伍流程
+
+[Team 测试插件](../dev/team-smoke/README.md)在真实宿主中启动两名原生队友，替换主会话和成员模型；用可取消的 `sleep` 保持成员活动。模拟低额度后验证两名成员停止确认、等待、向原 ID 逐一送达继续消息，最后主会话自动继续。成员第二次请求输出固定标记，不发送真实成员模型请求。
+
+已在 macOS Apple Silicon、Claude Code 2.1.325、`--teammate-mode in-process` 完成该流程。分屏不在此测试范围内。测试 fixture 不能证明真实账号跨重置窗口的服务端可用性，也不应加入生产 marketplace。
+
 ## 翻译来源互操作检查
 
 如果本机有可信的交互翻译插件源码，可以执行：
@@ -67,7 +77,7 @@ fixture 只替换主模型，其他插件、设置钩子和 Claude 后台特性�
 python3 dev/check_translator.py ../claude-interaction-translator/plugins/interaction-translator
 ```
 
-辅助脚本从守卫 manifest 读取默认继续文本，并额外加入中文“继续”，复制对方的模块到临时目录，运行四项来源测试。分别使用对方的 `api` 和 `codex-cli` 设置，验证 `plugin` 来源文本与来源信息不变，HTTP 和进程翻译调用数均为零。原项目与本机永久设置不会被修改，临时目录测试后清理。
+辅助脚本从守卫 manifest 读取默认继续文本，并额外加入中文“继续”，复制对方的模块到临时目录，运行十二项来源测试。分别使用对方的 `api` 和 `codex-cli` 设置，验证 `plugin` / `coordinator` / `peer` 来源文本与来源信息不变，HTTP 和进程翻译调用数均为零。原项目与本机永久设置不会被修改，临时目录测试后清理。协调来源测试验证对方过滤规则，不能推断所有宿主版本的路由字段一致。
 
 这是对指定翻译插件版本的实际钩子测试，不代替两个完整会话共用时所有输出路径的验证，也不能推广到未来版本。只对你信任的源码执行原生插件测试。
 

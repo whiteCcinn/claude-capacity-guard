@@ -16,7 +16,8 @@ Preserve these contracts:
 - Do not replay a model request or tool operation after a stream failure.
 - Do not automatically retry a continuation whose delivery is uncertain.
 - Keep state session-scoped and live writes ordered with durable writes.
-- Treat Agent Teams coordination as unsupported until each required lifecycle is implemented and tested.
+- Require native lifecycle evidence for each supported Agent Teams mode; do not extend in-process results to untested split-pane modes.
+- Persist member control claims before calls, retain partial outcomes and never declare the whole team stopped after a refused control.
 
 ## Validate
 
@@ -40,7 +41,7 @@ Exit the test session, then run:
 npx --yes --package typescript@5.9.3 tsc --noEmit -p plugins/capacity-guard
 ```
 
-Do not commit generated declarations, generated `tsconfig.json`, credentials, personal paths, account snapshots, session transcripts or logs. Test native lifecycle changes with the [development fixture](dev/smoke-fixture/README.md). It replaces the main model only; other installed hooks and native background features retain their own behavior.
+Do not commit generated declarations, generated `tsconfig.json`, credentials, personal paths, account snapshots, session transcripts or logs. Test single-session lifecycle changes with the [development fixture](dev/smoke-fixture/README.md), which replaces the main model only. Use the [Team fixture](dev/team-smoke/README.md) for real in-process teammates with stubbed main/member models. Other installed hooks and native background features retain their own behavior.
 
 ## Review and submit
 

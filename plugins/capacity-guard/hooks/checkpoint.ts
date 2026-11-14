@@ -1,5 +1,6 @@
 import type { SessionRateLimit } from "claude-code"
 import type { Checkpoint } from "../types"
+import { validTeam } from "./team"
 export type { Checkpoint } from "../types"
 
 export function savedCheckpoint(value: unknown, sessionId: string): Checkpoint | undefined {
@@ -9,7 +10,8 @@ export function savedCheckpoint(value: unknown, sessionId: string): Checkpoint |
   if (v.resumeAt !== null && (typeof v.resumeAt !== "number" || !Number.isFinite(v.resumeAt))) return
   if (!["waiting", "submitting", "manual"].includes(v.phase ?? "") || !Array.isArray(v.windows) || v.windows.length > 32) return
   if (v.windows.some(w => !w || typeof w.kind !== "string" || !Number.isFinite(w.percentUsed) || w.percentUsed < 0 || (w.resetsAt !== undefined && typeof w.resetsAt !== "string"))) return
-  return { version: 1, sessionId, token: v.token, turnId: v.turnId, pausedAt: v.pausedAt!, resumeAt: v.resumeAt!, windows: v.windows, phase: v.phase!, note: typeof v.note === "string" ? v.note.slice(0, 512) : undefined }
+  if (v.team !== undefined && !validTeam(v.team)) return
+  return { version: 1, sessionId, token: v.token, turnId: v.turnId, pausedAt: v.pausedAt!, resumeAt: v.resumeAt!, windows: v.windows, phase: v.phase!, note: typeof v.note === "string" ? v.note.slice(0, 512) : undefined, ...(v.team ? { team: v.team } : {}) }
 }
 
 export function mergeWindows(previous: readonly SessionRateLimit[], current: readonly SessionRateLimit[]): SessionRateLimit[] {

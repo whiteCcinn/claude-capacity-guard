@@ -1,41 +1,5 @@
-import { expect, mock, test } from "claude-code/testing"
-import type { On, SessionRateLimit } from "claude-code"
-
-function fixture(on: On) {
-  const clock = mock.clock(on)
-  const store = new Map<string, unknown>()
-  const sent: string[] = []
-  const resumeOrigins: unknown[] = []
-  const aborted: string[] = []
-  const state = { limits: [] as SessionRateLimit[], requests: 0, usageFails: false, storeFails: false, rejectInput: false, rejectResume: false, abortFails: false, onResume: undefined as (() => Promise<void>) | undefined }
-  on("session.start", (_, e) => ({ cwd: e.cwd }))
-  on("session.end", () => ({ sessionId: "session-a" }))
-  on("command.register", (_, e) => ({ value: { command: e.name } }))
-  on("session.id", () => ({ value: "session-a" }))
-  on("session.usage", () => { if (state.usageFails) throw new Error("private error"); return { value: { startedAt: 0, context: { tokens: 0, window: 200000, percent: 0 }, rateLimits: state.limits } } })
-  on("store.get", (_, e) => ({ value: store.get(e.key) }))
-  on("store.set", (_, e) => { if (state.storeFails) throw new Error("disk full"); store.set(e.key, e.value); return { value: undefined } })
-  on("ui.status", () => ({ value: undefined }))
-  on("turn.abort", (_, e) => { if (state.abortFails) throw new Error("abort refused"); aborted.push(e.turnId); return { value: undefined } })
-  on("turn.start", (_, e) => ({ turnId: e.turnId }))
-  on("turn.complete", (_, e) => ({ text: e.answer }))
-  on("prompt.submit", async (_, e) => {
-    if (e.origin?.kind === "plugin") {
-      sent.push(e.text)
-      resumeOrigins.push(e.origin)
-      if (state.rejectResume) return { drop: "the session was stopped and nobody has sent input since" }
-      await state.onResume?.()
-    } else if (state.rejectInput) return { drop: "rejected" }
-    return { text: e.text, origin: e.origin }
-  })
-  on("turn.step", async function* (_, e) {
-    state.requests++
-    yield { kind: "text", index: 0, text: "answer" }
-    yield { kind: "stop", stopReason: "end_turn", usage: null }
-    return { turnId: e.turnId, index: e.index, answer: "answer", toolUses: [], stopReason: "end_turn", usage: null }
-  })
-  return { clock, store, sent, resumeOrigins, aborted, state }
-}
+import { expect, test } from "claude-code/testing"
+import { fixture } from "./runtime-fixture"
 
 const options = { reset_buffer_seconds: 1, check_interval_seconds: 5 }
 const start = { cwd: "/tmp/capacity-test", surface: "terminal" as const, isInteractive: true }

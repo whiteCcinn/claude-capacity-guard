@@ -1,0 +1,7 @@
+{
+  "name": "capacity-team-smoke",
+  "version": "0.1.0",
+  "description": "Native Team pause/resume fixture with stubbed model steps.",
+  "author": { "name": "whiteCcinn" },
+  "license": "MIT"
+}

@@ -32,16 +32,18 @@ def main():
         test = '''import { expect, test } from "claude-code/testing"
 for (const continuation of RESUME_MESSAGES_JSON) {
 for (const backend of ["api", "codex-cli"]) {
-  test(`plugin continuation ${continuation} bypasses ${backend} input translation`, { options: { backend } }, async ($, on) => {
+for (const origin of [{ kind: "plugin", name: "capacity-guard" }, { kind: "coordinator", plugin: "capacity-guard" }, { kind: "peer", plugin: "capacity-guard" }] as const) {
+  test(`${origin.kind} continuation ${continuation} bypasses ${backend} input translation`, { options: { backend } }, async ($, on) => {
     let calls = 0
     on("http.fetch", () => { calls++; throw new Error("unexpected translation API call") })
     on("process.run", () => { calls++; throw new Error("unexpected translation process") })
     on("prompt.submit", (_, e) => ({ text: e.text, context: e.context, origin: e.origin }))
-    const result = await $.prompt.submit({ text: continuation, origin: { kind: "plugin", name: "capacity-guard" }, wait: false })
+    const result = await $.prompt.submit({ text: continuation, origin, wait: false })
     expect(result.text).toBe(continuation)
-    expect(result.origin).toEqual({ kind: "plugin", name: "capacity-guard" })
+    expect(result.origin).toEqual(origin)
     expect(calls).toBe(0)
   })
+}
 }
 }
 '''.replace("RESUME_MESSAGES_JSON", json.dumps(messages, ensure_ascii=False))

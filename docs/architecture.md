@@ -92,10 +92,19 @@ stateDiagram-v2
 | `pausedAt`、`resumeAt` | 暂停和预估恢复时间 |
 | `windows` | 最多 32 个相关窗口 |
 | `phase`、`note` | 等待、提交、手动恢复与说明 |
+| `team`（可选） | 原成员身份、控制阶段、停止与恢复交付状态，最多 64 名 |
 
 不保存任务提示词、聊天正文、工具输出或凭据。原生 `state` 支持当前会话的热重载，插件 `store` 用 `pause:<sessionId>` 键持久化记录。新进程没有原有 live state 的所有权，因此磁盘中的等待记录会转为手动，避免意外启动旧工作。
 
-继续文本属于原生配置，不写入暂停记录。热重载恢复等待时，使用新模块读取到的配置文本；0.1.1 没有更改暂停记录格式。
+继续文本属于原生配置，不写入暂停记录。热重载恢复等待时，使用新模块读取到的配置文本。0.2.0 在版本 1 的记录上增加可选 `team` 字段，保留无队伍旧记录的兼容性。
+
+## 队伍控制子状态
+
+检测到原生 Team 时，`waiting` 内另外记录 `pausing → paused → resuming`。主会话停止后，由主会话初始化时捕获的后台上下文调用 `TaskStop`；成员钩子不直接停止自身，避免自等待。暂停期间阻止成员模型请求及新 spawn，停止后再次发现成员，全部确认后才进入 `paused`。
+
+额度可用后，逐成员先保存 `sending`，再 `session.send`，收到确认保存 `sent`。已经送达的成员可运行，尚未恢复的成员继续受门禁约束。全员交付确认后才进入主会话的 `submitting`。这是逐成员入队，不等待每名成员完成任务。
+
+停止拒绝或交付失败保留各成员状态并转 `manual`。明确失败可由 `/capacity resume` 重试；未知结果与已送达状态不会自动重发。队伍恢复结束后的主会话交付问题不能用团队重试再次提交。恢复中重新发现低额度会建立新 token、使旧回调失效，再次停止已恢复成员。详细顺序和状态表见[队伍协调](team-coordination.md)。
 
 ## 并发与失败处理
 
@@ -115,9 +124,10 @@ stateDiagram-v2
 | --- | --- |
 | [policy.ts](../plugins/capacity-guard/hooks/policy.ts) | 参数归一化、有效读数、阈值与重置计算 |
 | [checkpoint.ts](../plugins/capacity-guard/hooks/checkpoint.ts) | 持久化记录校验和窗口合并 |
+| [team.ts](../plugins/capacity-guard/hooks/team.ts) | 原生成员识别、成员记录校验及请求门禁策略 |
 | [register.ts](../plugins/capacity-guard/hooks/register.ts) | 钩子、计时器、保存、命令和恢复所有权 |
 | [types/index.d.ts](../plugins/capacity-guard/types/index.d.ts) | 自包含原生 state 契约 |
 
-子任务和 Agent Teams 的请求能否被当前会话观察，取决于宿主执行方式。一个主会话的暂停记录不代表全队状态；详细边界见[集成文档](integrations.md)。
+普通子任务和 Agent Teams 的请求能否被当前会话观察，取决于宿主执行方式。有 `team` 的记录才包含队伍控制进度，不能仅凭主轮次结束认定全队已暂停；详细边界见[集成文档](integrations.md)。
 
 宿主 API 以本机生成的声明为准，公开资料见 [Mods reference](https://code.claude.com/docs/en/plugins/mods/reference.md) 和 [Mods API](https://code.claude.com/docs/en/plugins/mods/api.md)。测试证据见[兼容性说明](compatibility.md)。

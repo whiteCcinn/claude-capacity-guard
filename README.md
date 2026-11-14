@@ -30,11 +30,12 @@ claude plugin install capacity-guard@claude-capacity-guard
 
 ```text
 /capacity
+/capacity resume
 /capacity cancel
 /plugin configure capacity-guard@claude-capacity-guard
 ```
 
-`/capacity` 查看额度快照及等待状态，`/capacity cancel` 取消本次自动恢复。接受新的用户消息也会取消旧任务的恢复记录；如果额度仍低，新任务会重新触发暂停。取消等待不等于关闭守卫，持续关闭请修改 `enabled` 或禁用插件。
+`/capacity` 查看额度、当前队伍及逐成员恢复状态；`/capacity resume` 重试可确认的团队控制失败，仍检查额度；`/capacity cancel` 取消本次自动恢复。接受新的用户消息也会取消旧任务的恢复记录。取消不会唤醒已停止的队友；如果额度仍低，新任务会重新暂停。持续关闭请修改 `enabled` 或禁用插件。
 
 | 配置 | 默认值 | 作用 |
 | --- | --- | --- |
@@ -67,11 +68,13 @@ flowchart LR
 
 暂停会结束当前主轮次。继续时，Claude 根据原有会话历史、工具结果和文件改动接着执行。插件不重放工具调用，也不会在有执行预算的钩子里等待几个小时。[架构文档](docs/architecture.md)解释状态机、并发控制和错误处理。
 
+检测到 Agent Team 后，主会话用原生 `TaskStop` 逐个停止活动成员，并记录停止确认。等待期间阻止成员请求及新成员启动；额度恢复后，向原活动成员逐一发送配置的继续文本，确认入队后再续接主会话。原本空闲的成员不额外唤醒。成员也会检查额度并触发队伍暂停，但恢复顺序由主会话统一管理。详见[队伍协调](docs/team-coordination.md)。
+
 ## 适用范围
 
 - **自动恢复要求交互式会话保持运行**。关闭进程、关机或重新打开会话后，需要检查进度并手动继续。`claude -p` / SDK 不提供进程退出后的自动恢复。
 - **额度是最近一次响应的快照**。首次没有读数时允许原生请求；暂停后读数为空或读取失败则继续等待。重置时间经过后允许一次恢复尝试，不能保证其他会话没有再次消耗额度。
-- **Agent Teams 只有部分覆盖**。同进程且能被钩子观察到的成员请求会被检查；本版只自动续接主会话，不承诺整个队伍同步暂停或逐成员恢复。分屏成员需要各自加载插件，详见[集成边界](docs/integrations.md)。
+- **Agent Teams 已验证同进程模式**的队伍暂停与逐成员恢复。停止确认需要时间，不是操作系统原子冻结；恢复送达表示入队。tmux / iTerm2 分屏模式尚未完成端到端验证，详见[集成边界](docs/integrations.md)。
 - **不能保证外部操作恰好执行一次**。已经发送的请求可能完成，工具也可能被中止。可在自定义继续指令中要求核对已有结果，仍需任务本身具备幂等性或人工核对机制。
 
 与 `interaction-translator` 0.7.0 共用时，自动继续消息带有 `plugin` 来源，因此跳过它的输入翻译；后续回复仍受输出翻译设置影响。[集成说明](docs/integrations.md)包含源码依据与验证方法。
@@ -83,6 +86,7 @@ flowchart LR
 | [架构与原理](docs/architecture.md) | 额度计算、状态机、暂停和恢复流程 |
 | [配置与安装管理](docs/configuration.md) | 参数、命令行示例、更新和卸载 |
 | [日常使用](docs/usage.md) | 等待、取消、手动恢复与示例 |
+| [队伍协调](docs/team-coordination.md) | 自动发现、整队暂停、逐成员恢复和失败处理 |
 | [翻译插件与 Agent Teams](docs/integrations.md) | 互操作行为和支持边界 |
 | [兼容性与验证范围](docs/compatibility.md) | 已验证环境与未验证能力 |
 | [故障排查](docs/troubleshooting.md) | 没有读数、不恢复、仍然限流等问题 |

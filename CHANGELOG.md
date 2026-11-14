@@ -2,6 +2,28 @@
 
 Changes are recorded here using semantic versions. Version 0.x APIs and native host integrations may change as compatibility is established.
 
+## 0.2.0 — 2026-11-14
+
+### Added
+
+- Automatic native Team discovery, a bounded member checkpoint and lead-owned `TaskStop` controls with per-member acknowledgments.
+- A request fence while paused and ordered continuation delivery to original active members before continuing the lead. Previously idle members are not awakened.
+- `/capacity` member states and `/capacity resume` for confirmed team-control failures, with partial delivery retained and uncertain controls protected against resubmission.
+- Team policy and lifecycle regression tests, including idle-lead detection, late members, refused stops, partial recovery, cancellation, renewed low quota and user input during discovery.
+- A native two-teammate development fixture with stubbed main/member models, plus team coordination and mode-specific compatibility documentation.
+
+### Changed
+
+- Optional Team data extends the existing version-1 checkpoint; single-session checkpoints remain compatible.
+- Translator filter checks now cover plugin, coordinator and peer origins with both continuation texts and both backend settings (12 cases).
+- OpenSpec development records are local-only and ignored; published architecture and developer guides describe the feature.
+
+### Validation and limits
+
+- 56 native tests, strict TypeScript checks and 12 translator compatibility tests pass locally on Claude Code 2.1.325.
+- Two real in-process teammates confirmed stopping and received continuations at their original identities before lead continuation, using simulated quota and stubbed models.
+- Split panes are unverified. Stop controls are not an atomic process freeze, delivery confirms queuing, and external side effects remain outside an exactly-once guarantee.
+
 ## 0.1.1 — 2026-11-14
 
 ### Added
