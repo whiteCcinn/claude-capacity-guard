@@ -11,7 +11,7 @@
 | 阈值、多个额度窗口、空读数、存储故障、并发请求、热重载、重新打开记录 | 原生 mock 测试覆盖 |
 | 严格 TypeScript 检查 | 使用安装的 Claude Code 生成的声明验证 |
 | `interaction-translator` 0.7.0 | 来源过滤源码核对；两项独立原生测试验证 API / CLI 输入翻译零调用；共用会话中的命令已验证。输出翻译仍由对方配置决定 |
-| Linux | CI 工作流使用 `ubuntu-24.04`；远程通过情况应查看 [Actions](https://github.com/whiteCcinn/claude-capacity-guard/actions) |
+| Linux | CI 工作流使用 `ubuntu-24.04`；首次远程任务受 GitHub 账号限制，未执行任何步骤，尚不能宣称 Linux CI 已通过，见 [Actions](https://github.com/whiteCcinn/claude-capacity-guard/actions/runs/43572110246) |
 | Windows、其他 Claude Code 版本、IDE / Desktop / mobile 界面 | 未完成原生端到端验证 |
 | Agent Teams | 部分请求检查；没有完整整队暂停与逐成员恢复验证 |
 | `claude -p` / SDK | 无界面低额度路径有 mock 测试；不提供退出进程后的自动恢复 |

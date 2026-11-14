@@ -2,5 +2,5 @@
 - [x] Write bilingual READMEs and architecture, configuration, usage, integration, compatibility, troubleshooting and development guides.
 - [x] Add community policies, changelog, templates and public repository metadata.
 - [x] Test plugin-origin continuation against the reference translator without modifying it.
-- [ ] Complete final checks and inspect exactly what will be committed.
-- [ ] Commit and push to the requested repository, verify the ref and inspect CI.
+- [x] Complete final checks and inspect exactly what will be committed.
+- [x] Commit and push to the requested repository, verify the ref and inspect CI. Remote CI was prevented from starting by an account-level restriction; no remote pass is claimed.
